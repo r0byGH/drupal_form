@@ -2,3 +2,79 @@
 /*
  * form example module
  */
+
+  // implements hook_permission
+ function form_example_permission() {
+  return array(
+    'submit form example' => array(
+      'title' => t('Submit form example'),
+      'description' => t('Submit the sample form example'),
+    ),
+  );
+}
+
+ // Implements hook_menu()
+   function form_example_menu() {
+    $items['form_example'] = array(
+      'title' => 'My example form',
+      'type' => MENU_NORMAL_ITEM,
+      'access arguments' => array('submit form example'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('form_example_form'),
+    );
+    return $items;
+  }
+  
+ function form_example_form($form, &$form_state) {
+    $form['mynumber'] = array(
+       '#type' => 'textfield',
+       '#title' => 'My number',
+       '#required' => TRUE,
+       '#size' => 10,
+       '#maxlength' => 10,
+       '#description' => t('Please enter a valid number'),
+    );
+    
+    $form['mytextfield'] = array(
+       '#type' => 'textfield',
+       '#title' => 'My textfield',
+       '#required' => TRUE,
+       '#size' => 10,
+       '#maxlength' => 10,
+    );
+    
+    $form['mytext'] = array(
+       '#type' => 'textarea',
+       '#title' => 'My textarea',
+       '#default_value' => '',
+       '#required' => TRUE,
+       '#description' => t('Please enter some text'),
+    );
+    
+    $form['submit'] = array('#type' => 'submit', '#value' => t('add item'));
+    
+    return $form;
+ }
+ 
+ function form_example_form_validate($form, &$form_state) {
+  //print('<pre>' . print_r($form_state['values'],1) . '</pre>'); die();
+  if(!is_numeric($form_state['values']['mynumber'])) {
+   form_set_error('mynumber', t('You must enter a valid number'));
+   return FALSE;
+  }
+  return TRUE;
+ }
+ 
+  function form_example_form_submit($form, &$form_state) {
+  
+  $fe_id = db_insert('form_example')
+  ->fields(array(
+    'mynumber' => $form_state['values']['mynumber'],
+    'mytextfield' => $form_state['values']['mytextfield'],
+    'mytext' => $form_state['values']['mytext'],
+  ))
+  ->execute();
+  
+  drupal_set_message(t('Your form entry has been added.'));
+  
+ }
